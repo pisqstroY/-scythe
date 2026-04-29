@@ -32,7 +32,7 @@ local Library = {
     MainColor = Color3.fromRGB(0, 0, 0);             -- чёрный фон элементов
     BackgroundColor = Color3.fromRGB(0, 0, 0);       -- чёрный фон окна
     AccentColor = Color3.fromRGB(135, 206, 250);     -- небесно-голубой акцент
-    OutlineColor = Color3.fromRGB(255, 255, 255);    -- белые обводки
+    OutlineColor = Color3.fromRGB(0, 0, 0);   -- чёрная обводка = не видна на чёрном фоне
     RiskColor = Color3.fromRGB(255, 50, 50),
 
     Black = Color3.new(0, 0, 0);
