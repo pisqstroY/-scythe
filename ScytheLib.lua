@@ -3043,19 +3043,19 @@ local TabButtonLabel = Library:CreateLabel({
     Parent = TabButton;
 });
 
-        local Blocker = Library:Create('Frame', {
-            BackgroundColor3 = Library.MainColor;
-            BorderSizePixel = 0;
-            Position = UDim2.new(0, 0, 1, 0);
-            Size = UDim2.new(1, 0, 0, 1);
-            BackgroundTransparency = 1;
-            ZIndex = 3;
-            Parent = TabButton;
-        });
+local AccentLine = Library:Create('Frame', {
+    BackgroundColor3 = Library.AccentColor;
+    BorderSizePixel = 0;
+    Position = UDim2.new(0, 0, 0, 0);   -- сверху
+    Size = UDim2.new(1, 0, 0, 2);       -- толщина 2 пикселя
+    BackgroundTransparency = 1;          -- по умолчанию скрыта
+    ZIndex = 3;
+    Parent = TabButton;
+});
 
-        Library:AddToRegistry(Blocker, {
-            BackgroundColor3 = 'MainColor';
-        });
+Library:AddToRegistry(AccentLine, {
+    BackgroundColor3 = 'AccentColor';
+});
 
         local TabFrame = Library:Create('Frame', {
             Name = 'TabFrame',
@@ -3115,10 +3115,15 @@ local TabButtonLabel = Library:CreateLabel({
             end);
         end;
 
-        function Tab:ShowTab()
-            for _, Tab in next, Window.Tabs do
-                Tab:HideTab();
-            end;
+function Tab:ShowTab()
+    for _, Tab in next, Window.Tabs do
+        Tab:HideTab();
+    end;
+
+    AccentLine.BackgroundTransparency = 0;                     -- показываем полоску
+    TabButtonLabel.TextColor3 = Library.FontColor;             -- белый текст
+    TabFrame.Visible = true;
+end;
 
             Blocker.BackgroundTransparency = 0;
             TabButton.BackgroundColor3 = Library.MainColor;
@@ -3126,12 +3131,11 @@ local TabButtonLabel = Library:CreateLabel({
             TabFrame.Visible = true;
         end;
 
-        function Tab:HideTab()
-            Blocker.BackgroundTransparency = 1;
-            TabButton.BackgroundColor3 = Library.BackgroundColor;
-            Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor';
-            TabFrame.Visible = false;
-        end;
+function Tab:HideTab()
+    AccentLine.BackgroundTransparency = 1;                     -- прячем полоску
+    TabButtonLabel.TextColor3 = Color3.fromRGB(150, 150, 150); -- серый текст
+    TabFrame.Visible = false;
+end;
 
         function Tab:SetLayoutOrder(Position)
             TabButton.LayoutOrder = Position;
