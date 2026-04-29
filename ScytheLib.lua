@@ -3120,23 +3120,16 @@ function Tab:ShowTab()
         Tab:HideTab();
     end;
 
-    AccentLine.BackgroundTransparency = 0;                     -- показываем полоску
-    TabButtonLabel.TextColor3 = Library.FontColor;             -- белый текст
+    AccentLine.BackgroundTransparency = 0;          -- показываем голубую полоску
+    TabButtonLabel.TextColor3 = Library.FontColor;  -- белый текст
     TabFrame.Visible = true;
 end;
 
-            Blocker.BackgroundTransparency = 0;
-            TabButton.BackgroundColor3 = Library.MainColor;
-            Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor';
-            TabFrame.Visible = true;
-        end;
-
 function Tab:HideTab()
-    AccentLine.BackgroundTransparency = 1;                     -- прячем полоску
-    TabButtonLabel.TextColor3 = Color3.fromRGB(150, 150, 150); -- серый текст
+    AccentLine.BackgroundTransparency = 1;                       -- прячем полоску
+    TabButtonLabel.TextColor3 = Color3.fromRGB(150, 150, 150);  -- серый текст
     TabFrame.Visible = false;
 end;
-
         function Tab:SetLayoutOrder(Position)
             TabButton.LayoutOrder = Position;
             TabListLayout:ApplyLayout();
