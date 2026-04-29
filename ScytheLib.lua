@@ -28,11 +28,11 @@ local Library = {
 
     HudRegistry = {};
 
-    FontColor = Color3.fromRGB(255, 255, 255);
-    MainColor = Color3.fromRGB(28, 28, 28);
-    BackgroundColor = Color3.fromRGB(20, 20, 20);
-    AccentColor = Color3.fromRGB(0, 85, 255);
-    OutlineColor = Color3.fromRGB(50, 50, 50);
+    FontColor = Color3.fromRGB(255, 255, 255);       -- белый текст
+    MainColor = Color3.fromRGB(0, 0, 0);             -- чёрный фон элементов
+    BackgroundColor = Color3.fromRGB(0, 0, 0);       -- чёрный фон окна
+    AccentColor = Color3.fromRGB(135, 206, 250);     -- небесно-голубой акцент
+    OutlineColor = Color3.fromRGB(255, 255, 255);    -- белые обводки
     RiskColor = Color3.fromRGB(255, 50, 50),
 
     Black = Color3.new(0, 0, 0);
@@ -961,8 +961,7 @@ do
 
         return self;
     end;
-
-    function Funcs:AddKeyPicker(Idx, Info)
+        function Funcs:AddKeyPicker(Idx, Info)
         local ParentObj = self;
         local ToggleLabel = self.TextLabel;
         local Container = self.Container;
@@ -2879,11 +2878,11 @@ function Library:CreateWindow(...)
         Config.AutoShow = Arguments[2] or false;
     end
 
-    if type(Config.Title) ~= 'string' then Config.Title = 'No title' end
+    if type(Config.Title) ~= 'string' then Config.Title = 'Scythe' end
     if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 0 end
 
     if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
-    if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(550, 600) end
+    if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(1100, 600) end
 
     if Config.Center then
         Config.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2906,6 +2905,24 @@ function Library:CreateWindow(...)
     });
 
     Library:MakeDraggable(Outer, 25);
+
+    -- ===== GLOW EFFECT (ArabHub style) =====
+    local Glow = Library:Create('ImageLabel', {
+        Name = "Glow";
+        BackgroundTransparency = 1;
+        BorderSizePixel = 0;
+        Image = "http://www.roblox.com/asset/?id=18245826428";
+        ImageColor3 = Library.AccentColor;
+        ImageTransparency = 0.8;
+        ScaleType = Enum.ScaleType.Slice;
+        SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79));
+        Position = UDim2.new(0, -20, 0, -20);
+        Size = UDim2.new(1, 40, 1, 40);
+        ZIndex = 0;
+        Parent = Outer,
+    });
+    Library:AddToRegistry(Glow, { ImageColor3 = 'AccentColor' });
+    -- =========================================
 
     local Inner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
