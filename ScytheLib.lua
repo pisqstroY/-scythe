@@ -2883,8 +2883,7 @@ function Library:CreateWindow(...)
     end
 
     if type(Config.Title) ~= 'string' then Config.Title = 'Scythe' end
-    if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 0 end
-
+    if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 10 end
     if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
     if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(1100, 600) end
 
@@ -3019,15 +3018,16 @@ function Library:CreateWindow(...)
             Tabboxes = {};
         };
 
-        local TabButtonWidth = Library:GetTextBounds(Name, Library.Font, 16);
+-- Фиксированная ширина кнопки (можно подставить любое значение, например 200)
+local ButtonWidth = 200
 
-        local TabButton = Library:Create('Frame', {
-            BackgroundColor3 = Library.BackgroundColor;
-            BorderColor3 = Library.OutlineColor;
-            Size = UDim2.new(0, TabButtonWidth + 8 + 4, 1, 0);
-            ZIndex = 1;
-            Parent = TabArea;
-        });
+local TabButton = Library:Create('Frame', {
+    BackgroundColor3 = Library.BackgroundColor;
+    BorderColor3 = Library.OutlineColor;
+    Size = UDim2.new(0, ButtonWidth, 1, 0);
+    ZIndex = 1;
+    Parent = TabArea;
+});
 
         Library:AddToRegistry(TabButton, {
             BackgroundColor3 = 'BackgroundColor';
