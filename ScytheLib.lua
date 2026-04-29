@@ -3034,13 +3034,14 @@ local TabButton = Library:Create('Frame', {
             BorderColor3 = 'OutlineColor';
         });
 
-        local TabButtonLabel = Library:CreateLabel({
-            Position = UDim2.new(0, 0, 0, 0);
-            Size = UDim2.new(1, 0, 1, -1);
-            Text = Name;
-            ZIndex = 1;
-            Parent = TabButton;
-        });
+local TabButtonLabel = Library:CreateLabel({
+    Position = UDim2.new(0, 0, 0, 0);
+    Size = UDim2.new(1, 0, 1, -1);
+    Text = Name;
+    TextXAlignment = Enum.TextXAlignment.Center;   -- ← эта строка центрирует текст
+    ZIndex = 1;
+    Parent = TabButton;
+});
 
         local Blocker = Library:Create('Frame', {
             BackgroundColor3 = Library.MainColor;
