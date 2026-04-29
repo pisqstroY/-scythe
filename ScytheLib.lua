@@ -1919,7 +1919,7 @@ do
             Min = Info.Min;
             Max = Info.Max;
             Rounding = Info.Rounding;
-            MaxSize = 232;
+            MaxSize = nil;
             Type = 'Slider';
             Callback = Info.Callback or function(Value) end;
         };
@@ -1960,7 +1960,11 @@ do
             ZIndex = 6;
             Parent = SliderOuter;
         });
-
+        -- Вычисляем реальную ширину слайдера, чтобы ползунок не "застревал"
+if not Slider.MaxSize then
+    Slider.MaxSize = SliderInner.AbsoluteSize.X
+end
+        
         Library:AddToRegistry(SliderInner, {
             BackgroundColor3 = 'MainColor';
             BorderColor3 = 'OutlineColor';
