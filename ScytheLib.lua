@@ -3513,6 +3513,8 @@ end;
 
 Players.PlayerAdded:Connect(OnPlayerChange);
 Players.PlayerRemoving:Connect(OnPlayerChange);
+getgenv().Library = Library
+return Library
 --[[
     ScytheAddons.lua
     Аддоны для Scythe V2 / ScytheLib
@@ -3927,5 +3929,4 @@ function ScytheAddons:Init(Library)
 end
 
 return ScytheAddons
-getgenv().Library = Library
-return Library
+
