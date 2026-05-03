@@ -3515,10 +3515,6 @@ end;
 Players.PlayerAdded:Connect(OnPlayerChange);
 Players.PlayerRemoving:Connect(OnPlayerChange);
 
-getgenv().Library = Library
-return Library
-
-
 --// PREMIUM SYSTEM (FIXED + ADDONS)
 
 local Stats = game:GetService("Stats")
@@ -3631,3 +3627,5 @@ pcall(function()
     end)
 end)
 
+getgenv().Library = Library
+return Library
