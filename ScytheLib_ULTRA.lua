@@ -3626,6 +3626,76 @@ pcall(function()
         ApplyBackground()
     end)
 end)
+--// KEYBINDS LIST
 
+local Keybinds = {}
+local KeybindUI = Instance.new("Frame")
+KeybindUI.Parent = ScreenGui
+KeybindUI.Size = UDim2.new(0, 200, 0, 300)
+KeybindUI.Position = UDim2.new(1, -210, 0.5, -150)
+KeybindUI.BackgroundColor3 = Color3.fromRGB(20,20,20)
+KeybindUI.BackgroundTransparency = 0.2
+
+local UIList = Instance.new("UIListLayout", KeybindUI)
+UIList.Padding = UDim.new(0,4)
+
+local function UpdateKeybinds()
+    for _, v in pairs(KeybindUI:GetChildren()) do
+        if v:IsA("TextLabel") then v:Destroy() end
+    end
+
+    for name, data in pairs(Keybinds) do
+        if data.Active then
+            local Label = Instance.new("TextLabel")
+            Label.Parent = KeybindUI
+            Label.Size = UDim2.new(1,0,0,20)
+            Label.BackgroundTransparency = 1
+            Label.Text = name .. " [" .. data.Mode .. "]"
+            Label.Font = Library.Font
+            Label.TextSize = 14
+            Label.TextColor3 = Library.FontColor
+        end
+    end
+end
+
+-- API
+function Library:AddKeybind(name, key, mode, callback)
+    Keybinds[name] = {
+        Key = key,
+        Mode = mode or "Toggle",
+        Active = false,
+        Callback = callback
+    }
+end
+
+-- input
+game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+
+    for name, data in pairs(Keybinds) do
+        if input.KeyCode == data.Key then
+            if data.Mode == "Toggle" then
+                data.Active = not data.Active
+                data.Callback(data.Active)
+            elseif data.Mode == "Hold" then
+                data.Active = true
+                data.Callback(true)
+            end
+        end
+    end
+
+    UpdateKeybinds()
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(input)
+    for name, data in pairs(Keybinds) do
+        if input.KeyCode == data.Key and data.Mode == "Hold" then
+            data.Active = false
+            data.Callback(false)
+        end
+    end
+
+    UpdateKeybinds()
+end)
 getgenv().Library = Library
 return Library
