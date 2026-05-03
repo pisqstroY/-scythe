@@ -3513,6 +3513,419 @@ end;
 
 Players.PlayerAdded:Connect(OnPlayerChange);
 Players.PlayerRemoving:Connect(OnPlayerChange);
+--[[
+    ScytheAddons.lua
+    Аддоны для Scythe V2 / ScytheLib
+    ─────────────────────────────────────────────────────────────
+    Установка:
+        local ScytheAddons = loadstring(readfile('ScytheAddons.lua'))()
+        ScytheAddons:Init(Library)          -- вызвать ПОСЛЕ Library:CreateWindow(...)
+        ScytheAddons:BuildSection(tab)      -- tab = вкладка настроек (AddTab)
+    ─────────────────────────────────────────────────────────────
+    Фичи:
+      • RGB-глоу ватермарк с плавным переходом цвета по кругу
+      • Ватермарк: Scythe V2 | ник | FPS | пинг | название места
+      • Настройка скорости RGB, интенсивности глоу, прозрачности
+      • Кастомный фон из воркспейса экзека
+      • Смена шрифта и белый акцентный цвет
+]]
 
+local RunService   = game:GetService('RunService')
+local Players      = game:GetService('Players')
+local Stats        = game:GetService('Stats')
+local MarketplaceService = game:GetService('MarketplaceService')
+local TweenService = game:GetService('TweenService')
+
+local LocalPlayer  = Players.LocalPlayer
+
+-- ════════════════════════════════════════════════════════════
+local ScytheAddons = {}
+
+-- ── Настройки по умолчанию ──────────────────────────────────
+ScytheAddons.Settings = {
+    GlowEnabled     = true,
+    RGBSpeed        = 1.0,    -- множитель скорости (0.1 – 5.0)
+    GlowIntensity   = 5,      -- 1–12, количество слоёв + размер
+    GlowOpacity     = 0.55,   -- прозрачность слоёв (0–1)
+    WatermarkVisible= true,
+}
+
+-- ═══════════════════════════════════════════════════════════
+-- Внутренние утилиты
+-- ═══════════════════════════════════════════════════════════
+
+local function Create(class, props)
+    local inst = Instance.new(class)
+    for k, v in next, props do
+        inst[k] = v
+    end
+    return inst
+end
+
+local function SafePcall(fn, ...)
+    local ok, res = pcall(fn, ...)
+    if ok then return res end
+    return nil
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- 1. Патч библиотеки: шрифт и акцентный цвет
+-- ═══════════════════════════════════════════════════════════
+
+local function PatchLibrary(Library)
+    -- Белый акцент
+    Library.AccentColor     = Color3.fromRGB(255, 255, 255)
+    Library.AccentColorDark = Library:GetDarkerColor(Library.AccentColor)
+
+    -- Более красивый шрифт (GothamBold — чистый, современный)
+    Library.Font = Enum.Font.GothamBold
+
+    -- Обновить все элементы через реестр
+    Library:UpdateColorsUsingRegistry()
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- 2. Глоу-ватермарк
+-- ═══════════════════════════════════════════════════════════
+
+local function BuildWatermark(Library)
+    local S    = ScytheAddons.Settings
+    local ScreenGui = Library.ScreenGui
+
+    -- Скрыть стандартный ватермарк ScytheLib если он есть
+    if Library.Watermark then
+        Library.Watermark.Visible = false
+    end
+
+    -- ── Корневой контейнер ──
+    local Root = Create('Frame', {
+        BackgroundTransparency = 1,
+        Position  = UDim2.new(0, 12, 0, 8),
+        Size      = UDim2.new(0, 420, 0, 26),
+        ZIndex    = 500,
+        Parent    = ScreenGui,
+    })
+
+    -- ── Глоу-слои (за основным фреймом) ──
+    local GlowLayers = {}
+    local layerCount = 6
+    for i = layerCount, 1, -1 do
+        local spread = i * 3
+        local layer = Create('Frame', {
+            BackgroundColor3    = Color3.fromRGB(255,255,255),
+            BackgroundTransparency = 1 - (S.GlowOpacity * (1 - i/layerCount) * 0.6),
+            BorderSizePixel     = 0,
+            Position            = UDim2.new(0, -spread, 0, -spread),
+            Size                = UDim2.new(1, spread*2, 1, spread*2),
+            ZIndex              = 494 + i,
+            Parent              = Root,
+        })
+        Create('UICorner', { CornerRadius = UDim.new(0, 6 + spread/2), Parent = layer })
+        table.insert(GlowLayers, layer)
+    end
+
+    -- ── Основной фрейм ──
+    local MainFrame = Create('Frame', {
+        BackgroundColor3    = Color3.fromRGB(14, 14, 14),
+        BorderSizePixel     = 0,
+        Size                = UDim2.new(1, 0, 1, 0),
+        ZIndex              = 501,
+        Parent              = Root,
+    })
+    Create('UICorner', { CornerRadius = UDim.new(0, 5), Parent = MainFrame })
+
+    -- UIStroke — цветная граница (RGB)
+    local Stroke = Create('UIStroke', {
+        Color      = Color3.fromRGB(255,255,255),
+        Thickness  = 1.5,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent     = MainFrame,
+    })
+
+    -- Текст ватермарка
+    local Label = Create('TextLabel', {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 10, 0, 0),
+        Size                   = UDim2.new(1, -20, 1, 0),
+        Font                   = Library.Font,
+        TextColor3             = Color3.fromRGB(255, 255, 255),
+        TextSize               = 13,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        TextStrokeTransparency = 0.8,
+        TextStrokeColor3       = Color3.new(0,0,0),
+        ZIndex                 = 502,
+        Parent                 = MainFrame,
+    })
+
+    -- Drag
+    Library:MakeDraggable(Root)
+
+    -- ── Сохраняем ссылки ──
+    Library.ScytheWmRoot       = Root
+    Library.ScytheWmLabel      = Label
+    Library.ScytheWmStroke     = Stroke
+    Library.ScytheWmGlowLayers = GlowLayers
+
+    -- ── RGB-цикл по кругу ──────────────────────────────
+    -- Каждый слой получает сдвинутый оттенок, создавая
+    -- эффект радуги/обёртки вокруг ватермарка.
+    local Hue     = 0
+    local RGBConn = RunService.RenderStepped:Connect(function(dt)
+        local S2  = ScytheAddons.Settings
+        if not S2.GlowEnabled then return end
+
+        Hue = (Hue + dt * 0.28 * S2.RGBSpeed) % 1
+
+        -- Обновляем UIStroke
+        local mainColor = Color3.fromHSV(Hue, 0.85, 1)
+        Stroke.Color = mainColor
+
+        -- Обновляем каждый слой со сдвигом оттенка
+        local layerTotal = #GlowLayers
+        for i, layer in ipairs(GlowLayers) do
+            local shift = (i - 1) / layerTotal * 0.18  -- небольшой сдвиг
+            local layerHue = (Hue + shift) % 1
+            local r, g, b = Color3.fromHSV(layerHue, 0.9, 1):components()
+            local spread = i * 3
+            local baseOpacity = S2.GlowOpacity
+            layer.BackgroundColor3 = Color3.fromRGB(r*255, g*255, b*255)
+            -- чем дальше слой, тем прозрачнее
+            layer.BackgroundTransparency = 1 - (baseOpacity * (layerTotal - i + 1) / layerTotal * 0.55)
+        end
+    end)
+
+    table.insert(Library.Signals, RGBConn)
+    return Root, Label
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- 3. Обновление текста ватермарка
+-- ═══════════════════════════════════════════════════════════
+
+local function StartWatermarkLoop(Library)
+    -- Получить название места (один раз при старте)
+    local PlaceName = 'Unknown Place'
+    task.spawn(function()
+        local info = SafePcall(function()
+            return MarketplaceService:GetProductInfo(game.PlaceId, Enum.InfoType.Asset)
+        end)
+        if info and info.Name then
+            PlaceName = info.Name
+        else
+            PlaceName = game.Name ~= '' and game.Name or tostring(game.PlaceId)
+        end
+    end)
+
+    -- FPS-буфер (скользящее среднее)
+    local fpsBuf    = {}
+    local fpsBufMax = 15
+    local fpsConn   = RunService.RenderStepped:Connect(function(dt)
+        table.insert(fpsBuf, 1 / math.max(dt, 0.001))
+        if #fpsBuf > fpsBufMax then table.remove(fpsBuf, 1) end
+    end)
+    table.insert(Library.Signals, fpsConn)
+
+    -- Основной цикл обновления (2 раза в секунду)
+    task.spawn(function()
+        while true do
+            task.wait(0.5)
+
+            -- FPS
+            local fpsSum = 0
+            for _, v in ipairs(fpsBuf) do fpsSum = fpsSum + v end
+            local fps = math.floor(fpsSum / math.max(#fpsBuf, 1))
+
+            -- Пинг
+            local ping = 0
+            SafePcall(function()
+                ping = math.floor(
+                    Stats.Network.ServerStatsItem['Data Ping']:GetValue()
+                )
+            end)
+
+            local name = LocalPlayer.Name
+
+            local text = string.format(
+                'Scythe V2  |  %s  |  %d fps  |  %d ms  |  %s',
+                name, fps, ping, PlaceName
+            )
+
+            local lbl = Library.ScytheWmLabel
+            if lbl and lbl.Parent then
+                lbl.Text = text
+
+                -- Авторазмер по содержимому
+                local ts     = game:GetService('TextService')
+                local bounds = ts:GetTextSize(text, 13, Library.Font, Vector2.new(9999, 9999))
+                local root   = Library.ScytheWmRoot
+                if root then
+                    root.Size = UDim2.new(0, bounds.X + 24, 0, 26)
+                end
+            end
+        end
+    end)
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- 4. Кастомный фон
+-- ═══════════════════════════════════════════════════════════
+
+local function ApplyBackground(Library, imagePath, transparency)
+    local ScreenGui = Library.ScreenGui
+    transparency    = transparency or 0.15
+
+    -- Удалить предыдущий фон
+    if Library.ScytheBgImage and Library.ScytheBgImage.Parent then
+        Library.ScytheBgImage:Destroy()
+        Library.ScytheBgImage = nil
+    end
+
+    if not imagePath or imagePath == '' then return end
+
+    local bg = Create('ImageLabel', {
+        BackgroundTransparency = 1,
+        Image                  = imagePath,
+        ImageTransparency      = transparency,
+        ScaleType              = Enum.ScaleType.Crop,
+        Size                   = UDim2.new(1, 0, 1, 0),
+        ZIndex                 = 1,
+        Parent                 = ScreenGui,
+    })
+
+    -- Отправить на самый задний план
+    bg.ZIndex = -100
+    Library.ScytheBgImage = bg
+    return bg
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- 5. Секция настроек в UI
+-- ═══════════════════════════════════════════════════════════
+
+function ScytheAddons:BuildSection(tab)
+    local Library = self.Library
+
+    -- ── Левая группа: Ватермарк ──────────────────────────
+    local wmGroup = tab:AddLeftGroupbox('Watermark')
+
+    wmGroup:AddToggle('ScytheWm_Visible', {
+        Text    = 'Show watermark',
+        Default = true,
+        Tooltip = 'Показать / скрыть ватермарк',
+    }):OnChanged(function(val)
+        self.Settings.WatermarkVisible = val
+        if Library.ScytheWmRoot then
+            Library.ScytheWmRoot.Visible = val
+        end
+    end)
+
+    wmGroup:AddToggle('ScytheWm_Glow', {
+        Text    = 'RGB glow',
+        Default = true,
+        Tooltip = 'Включить RGB-глоу вокруг ватермарка',
+    }):OnChanged(function(val)
+        self.Settings.GlowEnabled = val
+        if not val then
+            -- Сбросить слои в невидимость
+            for _, layer in ipairs(Library.ScytheWmGlowLayers or {}) do
+                layer.BackgroundTransparency = 1
+            end
+            if Library.ScytheWmStroke then
+                Library.ScytheWmStroke.Color = Library.AccentColor
+            end
+        end
+    end)
+
+    wmGroup:AddSlider('ScytheWm_Speed', {
+        Text    = 'RGB speed',
+        Default = 10,
+        Min     = 1,
+        Max     = 50,
+        Rounding = 0,
+        Tooltip = 'Скорость смены цвета (1 = медленно, 50 = быстро)',
+    }):OnChanged(function(val)
+        self.Settings.RGBSpeed = val / 10
+    end)
+
+    wmGroup:AddSlider('ScytheWm_Intensity', {
+        Text     = 'Glow intensity',
+        Default  = 5,
+        Min      = 1,
+        Max      = 12,
+        Rounding = 0,
+        Tooltip  = 'Интенсивность свечения',
+    }):OnChanged(function(val)
+        self.Settings.GlowIntensity = val
+        -- Пересчитать позиции и размеры слоёв
+        for i, layer in ipairs(Library.ScytheWmGlowLayers or {}) do
+            local spread = i * (val / 2)
+            layer.Position = UDim2.new(0, -spread, 0, -spread)
+            layer.Size     = UDim2.new(1, spread*2, 1, spread*2)
+        end
+    end)
+
+    wmGroup:AddSlider('ScytheWm_Opacity', {
+        Text     = 'Glow opacity',
+        Default  = 55,
+        Min      = 5,
+        Max      = 95,
+        Rounding = 0,
+        Tooltip  = 'Прозрачность глоу (0 = невидимый, 95 = яркий)',
+    }):OnChanged(function(val)
+        self.Settings.GlowOpacity = val / 100
+    end)
+
+    -- ── Правая группа: Фон ──────────────────────────────
+    local bgGroup = tab:AddRightGroupbox('Background image')
+
+    bgGroup:AddLabel('Path from executor workspace:')
+    bgGroup:AddInput('ScytheBg_Path', {
+        Text        = 'Image path',
+        Default     = '',
+        Placeholder = 'e.g.  rbxasset://textures/bg.png',
+    })
+
+    bgGroup:AddSlider('ScytheBg_Transparency', {
+        Text     = 'Transparency',
+        Default  = 15,
+        Min      = 0,
+        Max      = 95,
+        Rounding = 0,
+    })
+
+    bgGroup:AddButton('Apply background', function()
+        local path  = Options.ScytheBg_Path.Value
+        local trans = Options.ScytheBg_Transparency.Value / 100
+        ApplyBackground(Library, path, trans)
+        Library:Notify('Background applied!', 2)
+    end)
+
+    bgGroup:AddButton('Remove background', function()
+        ApplyBackground(Library, '', 0)
+        Library:Notify('Background removed.', 2)
+    end)
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- 6. Публичный Init
+-- ═══════════════════════════════════════════════════════════
+
+function ScytheAddons:Init(Library)
+    self.Library = Library
+
+    -- 1. Патч цвета и шрифта
+    PatchLibrary(Library)
+
+    -- 2. Создать ватермарк
+    BuildWatermark(Library)
+
+    -- 3. Запустить обновление текста
+    StartWatermarkLoop(Library)
+
+    Library:Notify('Scythe Addons loaded ✓', 3)
+    return self
+end
+
+return ScytheAddons
 getgenv().Library = Library
 return Library
