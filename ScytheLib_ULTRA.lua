@@ -3626,6 +3626,23 @@ pcall(function()
         ApplyBackground()
     end)
 end)
-
+local Blur = Instance.new("BlurEffect")
+Blur.Size = 20
+Blur.Parent = game:GetService("Lighting")
+for _, obj in pairs(ScreenGui:GetDescendants()) do
+    if obj:IsA("Frame") then
+        obj.BackgroundTransparency = 1
+        game:GetService("TweenService"):Create(obj, TweenInfo.new(0.3), {
+            BackgroundTransparency = 0
+        }):Play()
+    end
+end
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(120,120,120))
+}
+UIGradient.Rotation = 90
+UIGradient.Parent = SOME_FRAME -- замени на нужный
 getgenv().Library = Library
 return Library
