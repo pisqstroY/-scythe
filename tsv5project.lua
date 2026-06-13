@@ -12,7 +12,7 @@ if not WYNF_OBFUSCATED then
 end
 
 local Library = loadstring(game:HttpGet(
-    WYNF_ENC_STRING('https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/ScytheLib.lua')
+    WYNF_ENC_STRING('https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/ScytheLibtrue.lua')
 ))()
 
 -- ══════════════════════════════════════════════════════════════════════════════
