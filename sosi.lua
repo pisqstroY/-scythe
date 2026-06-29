@@ -130,7 +130,34 @@ ClickSound.Parent = game:GetService("CoreGui")
 local function playClick()
     ClickSound:Play()
 end
+-- Blur setup
+local blurScreen = Instance.new("ScreenGui")
+blurScreen.Name = "femwareBlur"
+blurScreen.IgnoreGuiInset = true
+blurScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+blurScreen.ResetOnSpawn = false
+blurScreen.Parent = game:GetService("CoreGui")
 
+local blurEffect = Instance.new("BlurEffect")
+blurEffect.Name = "BackgroundBlur"
+blurEffect.Size = 0   -- start hidden
+blurEffect.Parent = blurScreen
+
+-- Right-side girl image
+local girlImage = Instance.new("ImageLabel")
+girlImage.Name = "GirlImage"
+girlImage.AnchorPoint = Vector2.new(0, 0.5)
+girlImage.BackgroundTransparency = 1
+girlImage.BorderSizePixel = 0
+girlImage.Image = "rbxassetid://12284368958"   -- замени на нужный ассет с девушкой
+girlImage.Size = UDim2.new(0, 256, 0, 256)    -- размер подгони под картинку
+girlImage.Position = UDim2.new(1, 30, 0.5, 0)  -- спрятана справа за экраном
+girlImage.Visible = false
+girlImage.Parent = blurScreen
+
+-- Tween variables for girl
+local girlInTween
+local girlOutTween
 local originalElements = {}
 
 local Library = {}
@@ -2085,14 +2112,56 @@ function Library.new(windowName, constrainToScreen, width, height, visibilityKey
 	buttonHolder.Plus.MouseButton1Click:Connect(maximizeWindow)
 	buttonHolder.Minus.MouseButton1Click:Connect(minimizeWindow)
 
-	UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-		if gameProcessedEvent then return end
-		if input.UserInputType == Enum.UserInputType.Keyboard then
-			if input.KeyCode == visibilityKeybind then
-				background.Visible = not background.Visible
-			end
-		end
-	end)
+-- State: true = window visible (in screen), false = hidden (below screen)
+local windowVisible = true
+local function setWindowVisible(visible)
+    windowVisible = visible
+    if visible then
+        -- Slide up + blur in + girl in
+        local showPos = UDim2.new(0, background.Position.X.Offset, 0.5, 0)  -- centre vertically
+        -- Save original position offset
+        local originalX = background.Position.X.Offset
+        -- Start from below screen (bottom + offset)
+        background.Position = UDim2.new(0, originalX, 1.2, 0)
+        background.Visible = true
+
+        local slideTween = TweenService:Create(background, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, originalX, 0.5, 0)})
+        local blurTween = TweenService:Create(blurEffect, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 10})
+        local girlPosTween = TweenService:Create(girlImage, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(1, -10, 0.5, 0)})
+
+        girlImage.Visible = true
+        slideTween:Play()
+        blurTween:Play()
+        girlPosTween:Play()
+    else
+        -- Slide down + blur out + girl out
+        local originalX = background.Position.X.Offset
+        local hidePos = UDim2.new(0, originalX, 1.2, 0)
+        local slideTween = TweenService:Create(background, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = hidePos})
+        local blurTween = TweenService:Create(blurEffect, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = 0})
+        local girlPosTween = TweenService:Create(girlImage, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 30, 0.5, 0)})
+
+        slideTween.Completed:Connect(function()
+            background.Visible = false
+        end)
+        girlPosTween.Completed:Connect(function()
+            girlImage.Visible = false
+        end)
+
+        slideTween:Play()
+        blurTween:Play()
+        girlPosTween:Play()
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == visibilityKeybind then
+            setWindowVisible(not windowVisible)
+        end
+    end
+end)
 
 	holder.Tabs.TabsUIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		holder.Tabs.CanvasSize = UDim2.fromOffset(0,holder.Tabs.TabsUIListLayout.AbsoluteContentSize.Y + holder.Tabs.TabsUIListLayout.Padding.Offset)
@@ -2121,7 +2190,17 @@ function Library.new(windowName, constrainToScreen, width, height, visibilityKey
 	minimizedLongBarOriginialSize = Vector2.new(heading.AbsoluteSize.X, heading.AbsoluteSize.Y)
 	minimizedShortBarOriginialSize = Vector2.new(heading.AbsoluteSize.X / 6 * 2, heading.AbsoluteSize.Y)
 	originialWindowSize = background.AbsoluteSize
-	
+	-- Initial slide-up animation
+background.Visible = true
+local initX = background.Position.X.Offset
+background.Position = UDim2.new(0, initX, 1.2, 0)
+local initSlide = TweenService:Create(background, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, initX, 0.5, 0)})
+local initBlur = TweenService:Create(blurEffect, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 10})
+girlImage.Visible = true
+local initGirl = TweenService:Create(girlImage, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(1, -10, 0.5, 0)})
+initSlide:Play()
+initBlur:Play()
+initGirl:Play()
 	return window
 end
 
