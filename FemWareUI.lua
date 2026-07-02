@@ -5281,9 +5281,9 @@ local Library do
             Banner.BackgroundTransparency = 1
             Banner.BorderSizePixel = 0
             Banner.Image = BannerAsset
-            Banner.ScaleType = Enum.ScaleType.Fit
-            Banner.Position = UDim2.new(1, 0, 0.5, -150)
-            Banner.Size = UDim2.new(0, 300, 0, 300)
+            Banner.ScaleType = Enum.ScaleType.Stretch -- Растягиваем картинку
+            Banner.Position = UDim2.new(0.74, 0, 0.52, 0) -- ТВОЯ ФИКСИРОВАННАЯ ПОЗИЦИЯ
+            Banner.Size = UDim2.new(0, 505, 0, 505)       -- ТВОЙ ФИКСИРОВАННЫЙ РАЗМЕР
             Banner.ZIndex = 10
             Banner.Parent = Library.Holder.Instance
             Items["Banner"] = {Instance = Banner}
@@ -5522,7 +5522,7 @@ local Library do
 
             Debounce = true 
 
-            if Window.IsOpen then 
+               if Window.IsOpen then 
                 Items["Window"].Instance.Visible = true 
                 PlaySound("18129409227", 0.5)
                 Library.Open = true
@@ -5531,14 +5531,10 @@ local Library do
                 Items["Window"].Instance.Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 1, 50)
                 TweenService:Create(Items["Window"].Instance, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 0, Camera.ViewportSize.Y / 3.3)}):Play()
 
+                -- Анимация баннера (выезд справа налево на ФИКСИРОВАННУЮ позицию)
                 if Items["Banner"] then
-                    local bW = Items["Banner"].Instance.Size.X.Offset
-                    local bH = Items["Banner"].Instance.Size.Y.Offset
-                    Items["Banner"].Instance.Position = UDim2New(1, 0, 0.5, -bH/2)
-                    
-                    -- Если есть кастомная позиция из слайдеров, летим туда. Если нет - летим к краю экрана.
-                    local targetPos = Window.BannerTargetPos or UDim2New(1, -bW, 0.5, -bH/2)
-                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+                    Items["Banner"].Instance.Position = UDim2New(1, 0, 0.52, 0)
+                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0.74, 0, 0.52, 0)}):Play()
                 end
             else
                 PlaySound("18129409227", 0.5)
@@ -5547,10 +5543,9 @@ local Library do
                 -- Анимация уезда вниз
                 TweenService:Create(Items["Window"].Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 1, 50)}):Play()
 
-                -- Баннер уезжает обратно вправо (динамический размер)
+                -- Баннер уезжает обратно вправо
                 if Items["Banner"] then
-                    local bH = Items["Banner"].Instance.Size.Y.Offset
-                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2New(1, 0, 0.5, -bH/2)}):Play()
+                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2New(1, 0, 0.52, 0)}):Play()
                 end
             end
 
