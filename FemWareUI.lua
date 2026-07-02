@@ -4917,7 +4917,6 @@ local Library do
 
     -- Library components
     Library.Watermark = function(self, Name)
-        Name = Name or "FemWare | femware.wtf"
         local Watermark = { }
 
         local Items = { } do 
@@ -4957,13 +4956,13 @@ local Library do
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(235, 235, 235),
                 BorderColor3 = FromRGB(0, 0, 0),
-                Text = Name,
+                Text = "FemWare | Loading...",
                 Position = UDim2New(0, 0, 0, 2),
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 BorderSizePixel = 0,
                 AutomaticSize = Enum.AutomaticSize.XY,
-                TextSize = 13,
+                TextSize = 13, -- Текст увеличивали автозаменой
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
@@ -4979,6 +4978,45 @@ local Library do
                 BackgroundColor3 = FromRGB(255, 105, 180)
             })  Items["Liner"]:AddToTheme({BackgroundColor3 = "Accent"})
         end
+
+        -- ===== ЛОГИКА ДИНАМИЧЕСКОГО ВОТЕРМАРКА (НИК, ПЛЕЙС, ФПС, ПИНГ) =====
+        local MarketplaceService = game:GetService("MarketplaceService")
+        local LocalPlayer = game:GetService("Players").LocalPlayer
+        
+        local PlaceName = "Unknown Place"
+        -- Запрашиваем название игры в отдельном потоке, чтобы не морозить скрипт
+        Library:Thread(function()
+            pcall(function()
+                PlaceName = MarketplaceService:GetProductInfo(game.PlaceId).Name
+            end)
+        end)
+
+        local Nick = LocalPlayer and (LocalPlayer.DisplayName or LocalPlayer.Name) or "Player"
+
+        local fpsCounter = 0
+        local lastFpsUpdate = tick()
+        local currentFps = 0
+        local ping = 0
+
+        -- Обновляем текст раз в 0.5 секунды
+        Library:Connect(RunService.RenderStepped, function()
+            fpsCounter = fpsCounter + 1
+            if tick() - lastFpsUpdate >= 0.5 then
+                currentFps = math.floor(fpsCounter / (tick() - lastFpsUpdate))
+                lastFpsUpdate = tick()
+                fpsCounter = 0
+                
+                -- Получаем пинг (защищено от ошибок)
+                pcall(function()
+                    ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+                end)
+
+                if Items["Text"] and Items["Text"].Instance then
+                    -- Форматируем текст: FemWare | Ник | Игра | ФПС FPS | ПИНГ ms
+                    Items["Text"].Instance.Text = string.format("FemWare | %s | %s | %d FPS | %d ms", Nick, PlaceName, currentFps, ping)
+                end
+            end
+        end)
 
         function Watermark:SetVisibility(Bool)
             Items["Watermark"].Instance.Visible = Bool
