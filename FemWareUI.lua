@@ -161,28 +161,32 @@ local function PlaySound(soundId, volume)
     game:GetService("Debris"):AddItem(sound, 2)
 end
 
+-- Продвинутая функция загрузки картинок
 local function GetCustomAsset(name, url)
     local path = "FemWare/Assets/" .. name
     if not isfolder("FemWare/Assets") then makefolder("FemWare/Assets") end
     
+    -- Если файла нет, качаем его
     if not isfile(path) then 
         local success, err = pcall(function()
             writefile(path, game:HttpGet(url))
         end)
         if not success then 
-            warn("FemWare: Не удалось скачать картинку: " .. tostring(err))
+            warn("FemWare: ОШИБКА ЗАГРУЗКИ КАРТИНКИ: " .. tostring(err))
         end
     end
     
+    -- Пытаемся получить путь к файлу
     local success, asset = pcall(function() return getcustomasset(path) end)
     if success and asset then
         return asset
     end
-    return "rbxassetid://0" -- Заглушка, если эксплойт не поддерживает кастомные ассеты
+    return "rbxassetid://0" -- Заглушка, если ничего не вышло
 end
 
-local LogoAsset = "rbxassetid://97217613802022"
-local BannerAsset = "rbxassetid://124712165864400"
+-- Твои новые ссылки с postimg.cc
+local LogoAsset = GetCustomAsset("FemLogo.png", "https://i.postimg.cc/QdY3Hq9m/Chat-GPT-Image-2-iul-2026-g-02-03-46.png")
+local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://i.postimg.cc/wM5zM8Lz/fate33.jpg")
 
 local Library do
     local Workspace = game:GetService("Workspace")
