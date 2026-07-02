@@ -65,80 +65,197 @@ do
         end
     end)
 
-    local LoadingGui = Instance.new("ScreenGui")
-    LoadingGui.Name = "\0"
-    LoadingGui.Parent = CoreGui
-    LoadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    LoadingGui.DisplayOrder = 9999
-    LoadingGui.IgnoreGuiInset = true
+-- ══════════════════════════════════════════════════════════════════════════
+--  FEMWARE LOADER (На базе Scythe Loader by 3umph)
+-- ══════════════════════════════════════════════════════════════════════════
+local TS  = game:GetService("TweenService")
+local RS  = game:GetService("RunService")
+local CG  = (pcall(function() return gethui() end) and gethui()) or game:GetService("CoreGui")
 
-    local Overlay = Instance.new("Frame")
-    Overlay.Name = "\0"
-    Overlay.Parent = LoadingGui
-    Overlay.Size = UDim2.new(2, 0, 2, 0)
-    Overlay.Position = UDim2.new(-0.5, 0, -0.5, 0)
-    Overlay.BackgroundColor3 = Color3.new(0, 0, 0)
-    Overlay.BackgroundTransparency = 1
-    Overlay.BorderSizePixel = 0
-
-    local BypassingText = Instance.new("TextLabel")
-    BypassingText.Name = "\0"
-    BypassingText.Parent = LoadingGui
-    BypassingText.Size = UDim2.new(1, 0, 0, 50)
-    BypassingText.Position = UDim2.new(0, 0, 0.5, -25)
-    BypassingText.BackgroundTransparency = 1
-    BypassingText.Text = "Bypassing..."
-    BypassingText.TextColor3 = Color3.fromRGB(255, 105, 180)
-    BypassingText.TextSize = 30
-    BypassingText.Font = Enum.Font.GothamBold
-    BypassingText.TextTransparency = 1
-    BypassingText.BorderSizePixel = 0
-
-    local CreditText = Instance.new("TextLabel")
-    CreditText.Name = "\0"
-    CreditText.Parent = LoadingGui
-    CreditText.Size = UDim2.new(1, 0, 0, 30)
-    CreditText.Position = UDim2.new(0, 0, 1, -40)
-    CreditText.BackgroundTransparency = 1
-    CreditText.Text = "made possible by: FemWare Team"
-    CreditText.TextSize = 16
-    CreditText.Font = Enum.Font.GothamBold
-    CreditText.TextTransparency = 1
-    CreditText.BorderSizePixel = 0
-    CreditText.RichText = true
-    CreditText.TextXAlignment = Enum.TextXAlignment.Center
-
-    local Hue = 0
-    local RainbowConnection = RunService.RenderStepped:Connect(function()
-        Hue = (Hue + 0.0005) % 1
-        CreditText.TextColor3 = Color3.fromHSV(Hue, 1, 1)
-    end)
-
-    local Duration = math.random(410, 580) / 100
-    local FadeIn = TweenService:Create(Overlay, TweenInfo.new(0.7), {BackgroundTransparency = 0.35})
-    local TextFadeIn = TweenService:Create(BypassingText, TweenInfo.new(0.7), {TextTransparency = 0})
-    local CreditFadeIn = TweenService:Create(CreditText, TweenInfo.new(0.7), {TextTransparency = 0})
-
-    FadeIn:Play()
-    TextFadeIn:Play()
-    CreditFadeIn:Play()
-
-    task.wait(0.7)
-    task.wait(Duration - 1.4)
-
-    local FadeOut = TweenService:Create(Overlay, TweenInfo.new(0.7), {BackgroundTransparency = 1})
-    local TextFadeOut = TweenService:Create(BypassingText, TweenInfo.new(0.7), {TextTransparency = 1})
-    local CreditFadeOut = TweenService:Create(CreditText, TweenInfo.new(0.7), {TextTransparency = 1})
-
-    FadeOut:Play()
-    TextFadeOut:Play()
-    CreditFadeOut:Play()
-
-    task.wait(0.7)
-
-    RainbowConnection:Disconnect()
-    LoadingGui:Destroy()
+local function N(cls, p, par)
+    local i = Instance.new(cls)
+    for k,v in pairs(p) do pcall(function() i[k]=v end) end
+    if par then i.Parent=par end
+    return i
 end
+
+local SW_C1 = Color3.fromRGB(255, 255, 255)  -- Белый (base)
+local SW_C2 = Color3.fromRGB(255, 105, 180)  -- Розовый (FemWare beam peak)
+
+local function sweepColor(charFrac, t)
+    local highlight_fraction = (t / 2 % 1.2) * 2 - 1.2
+    local delta = charFrac - highlight_fraction
+
+    local r1,g1,b1 = SW_C1.R*255, SW_C1.G*255, SW_C1.B*255
+    local r2,g2,b2 = SW_C2.R*255, SW_C2.G*255, SW_C2.B*255
+
+    if delta >= 0 and delta <= 1.4 then
+        local d = delta > 0.7 and (1.4 - delta) or delta
+        r1 = r1 + (r2 - r1) * d / 0.8
+        g1 = g1 + (g2 - g1) * d / 0.8
+        b1 = b1 + (b2 - b1) * d / 0.8
+    end
+
+    return string.format("%02X%02X%02X",
+        math.floor(math.clamp(r1, 0, 255) + .5),
+        math.floor(math.clamp(g1, 0, 255) + .5),
+        math.floor(math.clamp(b1, 0, 255) + .5))
+end
+
+local function ShowFemWareLoader(onDone)
+    for _, v in ipairs(CG:GetChildren()) do
+        if v.Name == "FEMWARE_LOADER" then v:Destroy() end
+    end
+
+    local AG = N("ScreenGui", {
+        Name             = "FEMWARE_LOADER",
+        ResetOnSpawn     = false,
+        ZIndexBehavior   = Enum.ZIndexBehavior.Sibling,
+        IgnoreGuiInset   = true,
+    }, CG)
+
+    local OV = N("Frame", {
+        Size                   = UDim2.new(1,0,1,0),
+        Position               = UDim2.new(0,0,0,0),
+        BackgroundColor3       = Color3.new(0,0,0),
+        BackgroundTransparency = 0,
+        BorderSizePixel        = 0,
+        ZIndex                 = 1,
+    }, AG)
+
+    local WORD   = {"F","e","m","W","a","r","e"}
+    local LW     = 80
+    local GAP    = -5
+    local FSIZE  = 100
+    local totalW = #WORD * LW + (#WORD-1) * GAP
+    local startX = -totalW / 2
+
+    local Cont = N("Frame", {
+        Size                   = UDim2.fromOffset(totalW+200, 210),
+        Position               = UDim2.fromScale(0.5, 0.5),
+        AnchorPoint            = Vector2.new(0.5, 0.5),
+        BackgroundTransparency = 1,
+        BorderSizePixel        = 0,
+        ZIndex                 = 2,
+    }, AG)
+
+    local ULine = N("Frame", {
+        Size             = UDim2.fromOffset(0, 1),
+        Position         = UDim2.new(0.5, startX-2, 0.5, 60),
+        BackgroundColor3 = SW_C2, -- Розовая линия
+        BorderSizePixel  = 0,
+        ZIndex           = 3,
+    }, Cont)
+
+    local Tag = N("TextLabel", {
+        Size                   = UDim2.fromOffset(totalW, 18),
+        Position               = UDim2.new(0.5, startX, 0.5, 66),
+        BackgroundTransparency = 1,
+        Text                   = "F e m W a r e   |   P i n k   E d i t i o n",
+        Font                   = Enum.Font.GothamBold,
+        TextSize               = 9,
+        TextColor3             = SW_C2, -- Розовый текст
+        TextTransparency       = 1,
+        TextXAlignment         = Enum.TextXAlignment.Right,
+        ZIndex                 = 3,
+    }, Cont)
+
+    local lbls = {}
+    for i, ch in ipairs(WORD) do
+        local xOff = startX + (i-1)*(LW+GAP)
+        local lbl = N("TextLabel", {
+            Size                   = UDim2.fromOffset(LW, 160),
+            Position               = UDim2.new(0.5, xOff, 0.5, -120),
+            BackgroundTransparency = 1,
+            Text                   = ch,
+            RichText               = true,
+            Font                   = Enum.Font.GothamBold,
+            TextSize               = FSIZE,
+            TextColor3             = SW_C1,
+            TextTransparency       = 1,
+            ZIndex                 = 3,
+        }, Cont)
+        lbl:SetAttribute("ch",   ch)
+        lbl:SetAttribute("frac", (i-1) / (#WORD-1))
+        lbls[i] = lbl
+    end
+
+    task.spawn(function()
+        local DROP    = 0.28
+        local STAGGER = 0.065
+        local FT      = 0.32
+        local t       = 0
+        local sweepConn
+
+        for i, lbl in ipairs(lbls) do
+            local xOff = startX + (i-1)*(LW+GAP)
+            lbl.Position         = UDim2.new(0.5, xOff, 0.5, -120)
+            lbl.TextTransparency = 1
+            task.delay((i-1)*STAGGER, function()
+                lbl.TextTransparency = 0
+                TS:Create(lbl,
+                    TweenInfo.new(DROP, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                    { Position = UDim2.new(0.5, xOff, 0.5, -45) }
+                ):Play()
+            end)
+        end
+
+        task.wait(#WORD * STAGGER + DROP + 0.04)
+
+        sweepConn = RS.Heartbeat:Connect(function(dt)
+            t = t + dt
+            for _, lbl in ipairs(lbls) do
+                if lbl.Parent then
+                    local hex = sweepColor(lbl:GetAttribute("frac"), t)
+                    lbl.Text  = string.format('<font color="#%s">%s</font>',
+                        hex, lbl:GetAttribute("ch"))
+                end
+            end
+        end)
+
+        TS:Create(ULine,
+            TweenInfo.new(0.44, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Size = UDim2.fromOffset(totalW+4, 1) }
+        ):Play()
+
+        task.wait(0.28)
+
+        TS:Create(Tag,
+            TweenInfo.new(0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { TextTransparency = 0 }
+        ):Play()
+
+        task.wait(0.72)
+
+        sweepConn:Disconnect()
+
+        for _, lbl in ipairs(lbls) do
+            local cur = lbl.Position
+            TS:Create(lbl,
+                TweenInfo.new(FT, Enum.EasingStyle.Quart, Enum.EasingDirection.In),
+                {
+                    TextTransparency = 1,
+                    Position = UDim2.new(cur.X.Scale, cur.X.Offset,
+                                         cur.Y.Scale, cur.Y.Offset - 26),
+                }
+            ):Play()
+        end
+
+        TS:Create(ULine, TweenInfo.new(FT, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { BackgroundTransparency = 1 }):Play()
+        TS:Create(Tag, TweenInfo.new(FT, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { TextTransparency = 1 }):Play()
+        TS:Create(OV, TweenInfo.new(FT, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { BackgroundTransparency = 1 }):Play()
+
+        task.wait(FT + 0.04)
+        AG:Destroy()
+
+        if type(onDone) == "function" then onDone() end
+    end)
+end
+
+-- Запускаем лоадер, а после него инициализируем библиотеку
+ShowFemWareLoader(function()
+    -- ВНИМАНИЕ: Весь твой остальной код библиотеки должен идти здесь!
+    -- (То есть всё, что начиналось с `local Library do` и ниже, должно быть внутри этой функции)
 
 task.wait(0.2)
 if ShowWarning and MessageBox then
@@ -576,12 +693,14 @@ local Library do
                 return
             end
 
-            if not self.Instance[Event] then 
+            -- Безопасно проверяем, существует ли событие (исправляет ошибку с Frame)
+            local success, eventInstance = pcall(function() return self.Instance[Event] end)
+            if not success or not eventInstance then 
                 return
             end
 
-            -- FemWare: Звук при ЛЮБОМ клике (кнопки, табы, toggles)
-            if Event == self.Instance.MouseButton1Down or Event == self.Instance.MouseButton1Click then
+            -- FemWare: Звук при клике только на кнопки
+            if Event == "MouseButton1Down" or Event == "MouseButton1Click" then
                 local OriginalCallback = Callback
                 Callback = function(...)
                     PlaySound("123373842476302", 0.5)
@@ -589,7 +708,7 @@ local Library do
                 end
             end
 
-            return Library:Connect(self.Instance[Event], Callback, Name)
+            return Library:Connect(eventInstance, Callback, Name)
         end
 
         Instances.Tween = function(self, Info, Goal)
