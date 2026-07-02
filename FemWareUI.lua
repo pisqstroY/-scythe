@@ -184,8 +184,7 @@ local function GetCustomAsset(name, url)
     return "rbxassetid://0" -- Заглушка, если ничего не вышло
 end
 
--- Твои прямые ссылки с GitHub
-local LogoAsset = GetCustomAsset("FemLogo.png", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/femlogo.png")
+
 local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/fate33.jpg")
 
 local Library do
