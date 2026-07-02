@@ -181,8 +181,8 @@ local function GetCustomAsset(name, url)
     return "rbxassetid://0" -- Заглушка, если эксплойт не поддерживает кастомные ассеты
 end
 
-local LogoAsset = GetCustomAsset("FemLogo.png", "https://i.imgur.com/OmqrgT4.png")
-local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://i.imgur.com/wh6T66y.jpeg")
+local LogoAsset = "rbxassetid://97217613802022"
+local BannerAsset = "rbxassetid://124712165864400"
 
 local Library do
     local Workspace = game:GetService("Workspace")
