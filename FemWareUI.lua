@@ -66,7 +66,7 @@ do
     end)
 
 -- ══════════════════════════════════════════════════════════════════════════
---  FEMWARE LOADER (На базе Scythe Loader by 3umph)
+--  FEMWARE LOADER (Точная копия Scythe Loader, розовый цвет)
 -- ══════════════════════════════════════════════════════════════════════════
 local TS  = game:GetService("TweenService")
 local RS  = game:GetService("RunService")
@@ -79,8 +79,8 @@ local function N(cls, p, par)
     return i
 end
 
-local SW_C1 = Color3.fromRGB(255, 255, 255)  -- Белый (base)
-local SW_C2 = Color3.fromRGB(255, 105, 180)  -- Розовый (FemWare beam peak)
+local SW_C1 = Color3.fromRGB(255, 255, 255)  -- белый (base)
+local SW_C2 = Color3.fromRGB(255, 105, 180)  -- розовый (beam peak)
 
 local function sweepColor(charFrac, t)
     local highlight_fraction = (t / 2 % 1.2) * 2 - 1.2
@@ -123,10 +123,11 @@ local function ShowFemWareLoader(onDone)
         ZIndex                 = 1,
     }, AG)
 
+    -- Точная копия оригинальных настроек, только слово FemWare
     local WORD   = {"F","e","m","W","a","r","e"}
-    local LW     = 80
-    local GAP    = -5
-    local FSIZE  = 100
+    local LW     = 110
+    local GAP    = -10
+    local FSIZE  = 140
     local totalW = #WORD * LW + (#WORD-1) * GAP
     local startX = -totalW / 2
 
@@ -141,20 +142,20 @@ local function ShowFemWareLoader(onDone)
 
     local ULine = N("Frame", {
         Size             = UDim2.fromOffset(0, 1),
-        Position         = UDim2.new(0.5, startX-2, 0.5, 60),
-        BackgroundColor3 = SW_C2, -- Розовая линия
+        Position         = UDim2.new(0.5, startX-2, 0.5, 70),
+        BackgroundColor3 = Color3.new(1,1,1),
         BorderSizePixel  = 0,
         ZIndex           = 3,
     }, Cont)
 
     local Tag = N("TextLabel", {
         Size                   = UDim2.fromOffset(totalW, 18),
-        Position               = UDim2.new(0.5, startX, 0.5, 66),
+        Position               = UDim2.new(0.5, startX, 0.5, 76),
         BackgroundTransparency = 1,
-        Text                   = "F e m W a r e   |   P i n k   E d i t i o n",
+        Text                   = "F e m W a r e",
         Font                   = Enum.Font.GothamBold,
         TextSize               = 9,
-        TextColor3             = SW_C2, -- Розовый текст
+        TextColor3             = Color3.new(1,1,1),
         TextTransparency       = 1,
         TextXAlignment         = Enum.TextXAlignment.Right,
         ZIndex                 = 3,
@@ -195,7 +196,7 @@ local function ShowFemWareLoader(onDone)
                 lbl.TextTransparency = 0
                 TS:Create(lbl,
                     TweenInfo.new(DROP, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-                    { Position = UDim2.new(0.5, xOff, 0.5, -45) }
+                    { Position = UDim2.new(0.5, xOff, 0.5, -62) }
                 ):Play()
             end)
         end
@@ -252,11 +253,94 @@ local function ShowFemWareLoader(onDone)
     end)
 end
 
--- Запускаем лоадер, а после него инициализируем библиотеку
+-- Запускаем лоадер, а после него выполняем основной код
 ShowFemWareLoader(function()
-    -- ВНИМАНИЕ: Весь твой остальной код библиотеки должен идти здесь!
-    -- (То есть всё, что начиналось с `local Library do` и ниже, должно быть внутри этой функции)
+    
+    -- ВНИМАНИЕ: Сюда, ВНУТРЬ этой функции, должен быть вставлен ВЕСЬ КОД БИБЛИОТЕКИ (FemWare UI)
+    -- от `local Library do` до `return Library` включительно!
+    
+    -- ===== НИЖЕ ИДЕТЕ НОВЫЙ ЧИСТЫЙ ЭКЗАМПЛ ДЛЯ ТЕСТА =====
+    -- (Он должен быть тоже внутри функции, после кода библиотеки)
 
+    local Library = getgenv().FemWare
+
+    local Window = Library:Window({
+        Size = UDim2.new(0, 650, 0, 450),
+        FadeTime = 0.4
+    })
+
+    local Watermark = Library:Watermark("FemWare | v1.0 | 69 FPS")
+    Watermark:SetVisibility(true)
+
+    local KeybindList = Library:KeybindList()
+    KeybindList:SetVisibility(true)
+
+    local MainPage = Window:Page({ Name = "Main", Columns = 2 })
+    local VisualsPage = Window:Page({ Name = "Visuals", Columns = 2 })
+    local ConfigsPage = Window:Page({ Name = "Settings", SubPages = true })
+
+    -- Main Page
+    local CombatSection = MainPage:Section({ Name = "Combat", Side = 1 })
+    CombatSection:Toggle({
+        Name = "Aimbot",
+        Default = false,
+        Flag = "aimbot_toggle",
+        Callback = function(val) print("Aimbot:", val) end
+    }):Keybind({ Name = "Aimbot Bind", Default = Enum.KeyCode.Q, Mode = "Hold" })
+
+    CombatSection:Slider({
+        Name = "Smoothness",
+        Min = 0, Max = 10, Default = 5,
+        Decimals = 0.1, Suffix = "",
+        Flag = "smoothness_slider",
+        Callback = function(val) print("Smoothness:", val) end
+    })
+
+    CombatSection:Dropdown({
+        Name = "Target Part",
+        Items = {"Head", "Torso", "HumanoidRootPart"},
+        Default = "Head",
+        Multi = false,
+        Flag = "target_part",
+        Callback = function(val) print("Target:", val) end
+    })
+
+    local MiscSection = MainPage:Section({ Name = "Misc", Side = 2 })
+    MiscSection:Button():Add("Respawn", function()
+        print("Respawning...")
+    end)
+
+    MiscSection:Textbox({
+        Name = "WalkSpeed",
+        Default = "16",
+        Placeholder = "Enter speed",
+        Numeric = true,
+        Flag = "walkspeed_input",
+        Callback = function(val) print("WalkSpeed:", val) end
+    })
+
+    -- Visuals Page
+    local ESSection = VisualsPage:Section({ Name = "ESP", Side = 1 })
+    local espToggle = ESSection:Toggle({
+        Name = "Enable ESP",
+        Default = true,
+        Flag = "esp_enabled"
+    })
+    espToggle:Colorpicker({
+        Name = "ESP Color",
+        Default = Color3.fromRGB(255, 105, 180),
+        Flag = "esp_color"
+    })
+
+    ESSection:Label("Info Label"):Keybind({ Name = "Info Bind", Default = Enum.KeyCode.F })
+
+    -- Settings Page
+    Library:CreateSettingsPage(Window, Watermark, KeybindList)
+
+    -- Уведомление при загрузке
+    Library:Notification("FemWare", "Успешно загружено! Нажми RightShift чтобы открыть/закрыть меню.", 5)
+
+end) -- Конец функции ShowFemWareLoader
 task.wait(0.2)
 if ShowWarning and MessageBox then
     MessageBox.Show({
