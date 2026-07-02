@@ -5622,10 +5622,12 @@ local Library do
                 Items["Window"].Instance.Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 1, 50)
                 TweenService:Create(Items["Window"].Instance, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 0, Camera.ViewportSize.Y / 3.3)}):Play()
 
-                -- Анимация баннера (выезд справа налево)
+                -- Анимация баннера (выезд справа налево, динамический размер)
                 if Items["Banner"] then
-                    Items["Banner"].Instance.Position = UDim2New(1, 0, 0.5, -150)
-                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, -300, 0.5, -150)}):Play()
+                    local bW = Items["Banner"].Instance.Size.X.Offset
+                    local bH = Items["Banner"].Instance.Size.Y.Offset
+                    Items["Banner"].Instance.Position = UDim2New(1, 0, 0.5, -bH/2)
+                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, -bW, 0.5, -bH/2)}):Play()
                 end
             else
                 PlaySound("18129409227", 0.5)
@@ -5634,9 +5636,10 @@ local Library do
                 -- Анимация уезда вниз
                 TweenService:Create(Items["Window"].Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 1, 50)}):Play()
 
-                -- Баннер уезжает обратно вправо
+                -- Баннер уезжает обратно вправо (динамический размер)
                 if Items["Banner"] then
-                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2New(1, 0, 0.5, -150)}):Play()
+                    local bH = Items["Banner"].Instance.Size.Y.Offset
+                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2New(1, 0, 0.5, -bH/2)}):Play()
                 end
             end
 
