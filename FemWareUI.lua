@@ -5622,12 +5622,14 @@ local Library do
                 Items["Window"].Instance.Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 1, 50)
                 TweenService:Create(Items["Window"].Instance, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, Camera.ViewportSize.X / 3.3, 0, Camera.ViewportSize.Y / 3.3)}):Play()
 
-                -- Анимация баннера (выезд справа налево, динамический размер)
                 if Items["Banner"] then
                     local bW = Items["Banner"].Instance.Size.X.Offset
                     local bH = Items["Banner"].Instance.Size.Y.Offset
                     Items["Banner"].Instance.Position = UDim2New(1, 0, 0.5, -bH/2)
-                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, -bW, 0.5, -bH/2)}):Play()
+                    
+                    -- Если есть кастомная позиция из слайдеров, летим туда. Если нет - летим к краю экрана.
+                    local targetPos = Window.BannerTargetPos or UDim2New(1, -bW, 0.5, -bH/2)
+                    TweenService:Create(Items["Banner"].Instance, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = targetPos}):Play()
                 end
             else
                 PlaySound("18129409227", 0.5)
