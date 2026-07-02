@@ -161,12 +161,12 @@ local function PlaySound(soundId, volume)
     game:GetService("Debris"):AddItem(sound, 2)
 end
 
--- Продвинутая функция загрузки картинок
+-- Функция для надежного скачивания картинок с GitHub
 local function GetCustomAsset(name, url)
     local path = "FemWare/Assets/" .. name
     if not isfolder("FemWare/Assets") then makefolder("FemWare/Assets") end
     
-    -- Если файла нет, качаем его
+    -- Если файла нет, скачиваем его с Гитхаба
     if not isfile(path) then 
         local success, err = pcall(function()
             writefile(path, game:HttpGet(url))
@@ -176,7 +176,7 @@ local function GetCustomAsset(name, url)
         end
     end
     
-    -- Пытаемся получить путь к файлу
+    -- Получаем путь к файлу для Роблокса
     local success, asset = pcall(function() return getcustomasset(path) end)
     if success and asset then
         return asset
@@ -184,9 +184,9 @@ local function GetCustomAsset(name, url)
     return "rbxassetid://0" -- Заглушка, если ничего не вышло
 end
 
--- Твои новые ссылки с postimg.cc
-local LogoAsset = GetCustomAsset("FemLogo.png", "https://i.postimg.cc/QdY3Hq9m/Chat-GPT-Image-2-iul-2026-g-02-03-46.png")
-local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://i.postimg.cc/wM5zM8Lz/fate33.jpg")
+-- Твои прямые ссылки с GitHub
+local LogoAsset = GetCustomAsset("FemLogo.png", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/femlogo.png")
+local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/fate33.jpg")
 
 local Library do
     local Workspace = game:GetService("Workspace")
