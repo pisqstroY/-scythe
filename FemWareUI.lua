@@ -185,7 +185,7 @@ local function GetCustomAsset(name, url)
 end
 
 
-local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/fate33.jpg")
+local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/fate33.png")
 
 local Library do
     local Workspace = game:GetService("Workspace")
