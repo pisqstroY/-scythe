@@ -966,7 +966,7 @@ local Library do
         ResetOnSpawn = false
     })
 
-    do
+     do
         local SnowFrame = InstanceNew("Frame")
         SnowFrame.Size = UDim2New(1, 0, 1, 0)
         SnowFrame.BackgroundTransparency = 1
@@ -978,17 +978,16 @@ local Library do
         local SnowCount = 30
 
         for i = 1, SnowCount do
-            local flake = InstanceNew("Frame")
-            flake.Size = UDim2New(0, 6, 0, 6)
+            -- Делаем сердечки вместо квадратиков
+            local flake = InstanceNew("ImageLabel")
+            flake.Size = UDim2New(0, 16, 0, 16)
             flake.BackgroundColor3 = Color3.new(1, 1, 1)
-            flake.BackgroundTransparency = 0
+            flake.BackgroundTransparency = 1
             flake.BorderSizePixel = 0
+            flake.Image = "rbxassetid://7022255322" -- Картинка сердечка
+            flake.ImageColor3 = Color3.fromRGB(255, 105, 180) -- Розовый цвет
             flake.Parent = SnowFrame
             flake.Visible = false
-
-            local corner = InstanceNew("UICorner")
-            corner.CornerRadius = UDim.new(1, 0)
-            corner.Parent = flake
 
             Snowflakes[i] = {
                 Frame = flake,
@@ -1007,7 +1006,7 @@ local Library do
             for _, s in Snowflakes do
                 s.Frame.Visible = true
                 s.Frame.Position = UDim2.new(s.X, 0, s.Y, 0)
-                s.Frame.BackgroundTransparency = 1 - s.Opacity
+                s.Frame.ImageTransparency = 1 - s.Opacity
             end
             if SnowConnection then SnowConnection:Disconnect() end
             SnowConnection = RunService.RenderStepped:Connect(function(dt)
@@ -1021,6 +1020,7 @@ local Library do
                     end
                     if newX > 1.1 then newX = -0.1 elseif newX < -0.1 then newX = 1.1 end
                     s.Frame.Position = UDim2.new(newX, 0, newY, 0)
+                    s.Frame.Rotation = s.Frame.Rotation + 1 -- Сердечки будут плавно крутиться
                     s.X = newX
                     s.Y = newY
                 end
