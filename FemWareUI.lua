@@ -52,92 +52,17 @@ do
         pcall(function() OldLib:Unload() end)
     end
 
-    local TweenService = game:GetService("TweenService")
-    local RunService = game:GetService("RunService")
-    local CoreGui = cloneref and cloneref(game:GetService("CoreGui")) or game:GetService("CoreGui")
+    -- local TweenService = game:GetService("TweenService") -- Убрал, так как они больше не нужны здесь
+    -- local RunService = game:GetService("RunService")
+    -- local CoreGui = cloneref and cloneref(game:GetService("CoreGui")) or game:GetService("CoreGui")
 
     pcall(function()
-        if not isfolder("FemWare/Assets") then
-            makefolder("FemWare/Assets")
-        end
-        if not isfolder("FemWare/Settings") then
-            makefolder("FemWare/Settings")
-        end
+        if not isfolder("FemWare") then makefolder("FemWare") end
+        if not isfolder("FemWare/Assets") then makefolder("FemWare/Assets") end
+        if not isfolder("FemWare/Settings") then makefolder("FemWare/Settings") end
     end)
-    local LoadingGui = Instance.new("ScreenGui")
-    LoadingGui.Name = "\0"
-    LoadingGui.Parent = CoreGui
-    LoadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    LoadingGui.DisplayOrder = 9999
-    LoadingGui.IgnoreGuiInset = true
-
-    local Overlay = Instance.new("Frame")
-    Overlay.Name = "\0"
-    Overlay.Parent = LoadingGui
-    Overlay.Size = UDim2.new(2, 0, 2, 0)
-    Overlay.Position = UDim2.new(-0.5, 0, -0.5, 0)
-    Overlay.BackgroundColor3 = Color3.new(0, 0, 0)
-    Overlay.BackgroundTransparency = 1
-    Overlay.BorderSizePixel = 0
-
-    local BypassingText = Instance.new("TextLabel")
-    BypassingText.Name = "\0"
-    BypassingText.Parent = LoadingGui
-    BypassingText.Size = UDim2.new(1, 0, 0, 50)
-    BypassingText.Position = UDim2.new(0, 0, 0.5, -25)
-    BypassingText.BackgroundTransparency = 1
-    BypassingText.Text = "Bypassing..."
-    BypassingText.TextColor3 = Color3.fromRGB(255, 105, 180)
-    BypassingText.TextSize = 30
-    BypassingText.Font = Enum.Font.GothamBold
-    BypassingText.TextTransparency = 1
-    BypassingText.BorderSizePixel = 0
-
-    local CreditText = Instance.new("TextLabel")
-    CreditText.Name = "\0"
-    CreditText.Parent = LoadingGui
-    CreditText.Size = UDim2.new(1, 0, 0, 30)
-    CreditText.Position = UDim2.new(0, 0, 1, -40)
-    CreditText.BackgroundTransparency = 1
-    CreditText.Text = "made possible by: FemWare Team"
-    CreditText.TextSize = 16
-    CreditText.Font = Enum.Font.GothamBold
-    CreditText.TextTransparency = 1
-    CreditText.BorderSizePixel = 0
-    CreditText.RichText = true
-    CreditText.TextXAlignment = Enum.TextXAlignment.Center
-
-    local Hue = 0
-    local RainbowConnection = RunService.RenderStepped:Connect(function()
-        Hue = (Hue + 0.0005) % 1
-        CreditText.TextColor3 = Color3.fromHSV(Hue, 1, 1)
-    end)
-
-    local Duration = math.random(410, 580) / 100
-    local FadeIn = TweenService:Create(Overlay, TweenInfo.new(0.7), {BackgroundTransparency = 0.35})
-    local TextFadeIn = TweenService:Create(BypassingText, TweenInfo.new(0.7), {TextTransparency = 0})
-    local CreditFadeIn = TweenService:Create(CreditText, TweenInfo.new(0.7), {TextTransparency = 0})
-
-    FadeIn:Play()
-    TextFadeIn:Play()
-    CreditFadeIn:Play()
-
-    task.wait(0.7)
-    task.wait(Duration - 1.4)
-
-    local FadeOut = TweenService:Create(Overlay, TweenInfo.new(0.7), {BackgroundTransparency = 1})
-    local TextFadeOut = TweenService:Create(BypassingText, TweenInfo.new(0.7), {TextTransparency = 1})
-    local CreditFadeOut = TweenService:Create(CreditText, TweenInfo.new(0.7), {TextTransparency = 1})
-
-    FadeOut:Play()
-    TextFadeOut:Play()
-    CreditFadeOut:Play()
-
-    task.wait(0.7)
-
-    RainbowConnection:Disconnect()
-    LoadingGui:Destroy()
 end
+
 task.wait(0.2)
 if ShowWarning and MessageBox then
     MessageBox.Show({
@@ -151,37 +76,23 @@ end
 
 -- ===== FemWare Custom Assets & Sounds =====
 local function PlaySound(soundId, volume)
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://" .. soundId
-    sound.Volume = volume or 0.5
-    sound.Parent = game:GetService("SoundService")
-    sound:Play()
-    game:GetService("Debris"):AddItem(sound, 2)
+    local s = Instance.new("Sound")
+    s.SoundId = "rbxassetid://" .. soundId
+    s.Volume = volume or 0.5
+    s.Parent = game:GetService("SoundService")
+    s:Play()
+    game:GetService("Debris"):AddItem(s, 2)
 end
 
--- Функция для надежного скачивания картинок с GitHub
 local function GetCustomAsset(name, url)
     local path = "FemWare/Assets/" .. name
     if not isfolder("FemWare/Assets") then makefolder("FemWare/Assets") end
-    
-    -- Если файла нет, скачиваем его с Гитхаба
     if not isfile(path) then 
-        local success, err = pcall(function()
-            writefile(path, game:HttpGet(url))
-        end)
-        if not success then 
-            warn("FemWare: ОШИБКА ЗАГРУЗКИ КАРТИНКИ: " .. tostring(err))
-        end
+        pcall(function() writefile(path, game:HttpGet(url)) end)
     end
-    
-    -- Получаем путь к файлу для Роблокса
     local success, asset = pcall(function() return getcustomasset(path) end)
-    if success and asset then
-        return asset
-    end
-    return "rbxassetid://0" -- Заглушка, если ничего не вышло
+    return success and asset or "rbxassetid://0"
 end
-
 
 local BannerAsset = GetCustomAsset("FemBanner.jpg", "https://raw.githubusercontent.com/pisqstroY/-scythe/refs/heads/main/new%20fate-Photoroom.png")
 
