@@ -164,8 +164,21 @@ end
 local function GetCustomAsset(name, url)
     local path = "FemWare/Assets/" .. name
     if not isfolder("FemWare/Assets") then makefolder("FemWare/Assets") end
-    if not isfile(path) then writefile(path, game:HttpGet(url)) end
-    return getcustomasset(path)
+    
+    if not isfile(path) then 
+        local success, err = pcall(function()
+            writefile(path, game:HttpGet(url))
+        end)
+        if not success then 
+            warn("FemWare: Не удалось скачать картинку: " .. tostring(err))
+        end
+    end
+    
+    local success, asset = pcall(function() return getcustomasset(path) end)
+    if success and asset then
+        return asset
+    end
+    return "rbxassetid://0" -- Заглушка, если эксплойт не поддерживает кастомные ассеты
 end
 
 local LogoAsset = GetCustomAsset("FemLogo.png", "https://i.imgur.com/OmqrgT4.png")
