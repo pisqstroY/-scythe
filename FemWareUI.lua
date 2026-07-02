@@ -983,7 +983,7 @@ local Library do
         ResetOnSpawn = false
     })
 
-     do
+    do
         local SnowFrame = InstanceNew("Frame")
         SnowFrame.Size = UDim2New(1, 0, 1, 0)
         SnowFrame.BackgroundTransparency = 1
@@ -992,17 +992,19 @@ local Library do
         SnowFrame.Visible = false
 
         local Snowflakes = {}
-        local SnowCount = 30
+        local SnowCount = 25
 
         for i = 1, SnowCount do
-            -- Делаем сердечки вместо квадратиков
-            local flake = InstanceNew("ImageLabel")
-            flake.Size = UDim2New(0, 16, 0, 16)
-            flake.BackgroundColor3 = Color3.new(1, 1, 1)
+            -- Делаем сердечки из ТЕКСТа (эмодзи), чтобы не зависеть от загрузки картинок
+            local flake = InstanceNew("TextLabel")
+            flake.Size = UDim2New(0, 20, 0, 20)
             flake.BackgroundTransparency = 1
             flake.BorderSizePixel = 0
-            flake.Image = "rbxassetid://7022255322" -- Картинка сердечка
-            flake.ImageColor3 = Color3.fromRGB(255, 105, 180) -- Розовый цвет
+            flake.Text = "❤" -- Сердечко
+            flake.TextColor3 = Color3.fromRGB(255, 105, 180) -- Розовый
+            flake.TextTransparency = 1
+            flake.Font = Enum.Font.GothamBold
+            flake.TextSize = math.random(15, 25) -- Разные размеры
             flake.Parent = SnowFrame
             flake.Visible = false
 
@@ -1023,7 +1025,7 @@ local Library do
             for _, s in Snowflakes do
                 s.Frame.Visible = true
                 s.Frame.Position = UDim2.new(s.X, 0, s.Y, 0)
-                s.Frame.ImageTransparency = 1 - s.Opacity
+                s.Frame.TextTransparency = 1 - s.Opacity -- Меняем прозрачность текста
             end
             if SnowConnection then SnowConnection:Disconnect() end
             SnowConnection = RunService.RenderStepped:Connect(function(dt)
@@ -1037,7 +1039,7 @@ local Library do
                     end
                     if newX > 1.1 then newX = -0.1 elseif newX < -0.1 then newX = 1.1 end
                     s.Frame.Position = UDim2.new(newX, 0, newY, 0)
-                    s.Frame.Rotation = s.Frame.Rotation + 1 -- Сердечки будут плавно крутиться
+                    s.Frame.Rotation = s.Frame.Rotation + 1
                     s.X = newX
                     s.Y = newY
                 end
